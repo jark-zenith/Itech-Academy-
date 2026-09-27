@@ -32,6 +32,16 @@ function seedData(){
       {id:"enr-2",studentId:"student-1",courseId:"ai-1",progress:12,status:"active"}
     ],
     submissions:[],
+    aiAgents:[
+      {id:"jark",name:"J.A.R.K",provider:"ITech Academy",model:"Orchestrator",role:"Lead AI Tutor",description:"Coordinates the Academy AI Faculty, teaches concepts, tracks learning context and routes tasks.",status:"active",courses:["*"]},
+      {id:"claude-code",name:"Claude Code Mentor",provider:"Anthropic",model:"Claude",role:"Code Mentor",description:"Programming, architecture, debugging, code review and software engineering guidance.",status:"active",courses:["web-1","ai-1"]},
+      {id:"chatgpt-research",name:"ChatGPT Research Mentor",provider:"OpenAI",model:"ChatGPT",role:"Research Mentor",description:"Concept explanations, structured research, problem solving and source-aware learning support.",status:"active",courses:["*"]},
+      {id:"gemini-innovation",name:"Gemini Innovation Mentor",provider:"Google",model:"Gemini",role:"Innovation Mentor",description:"Multimodal learning, AI experiments, brainstorming and creative technical exploration.",status:"active",courses:["ai-1"]},
+      {id:"cyber",name:"Cyber Mentor",provider:"ITech Academy",model:"Security Engine",role:"Cybersecurity Mentor",description:"Defensive cybersecurity, Linux, networking, permissions and safe security labs.",status:"active",courses:["cyber-1"]},
+      {id:"lab",name:"Project Lab Coach",provider:"ITech Academy",model:"Project Coach",role:"Project Coach",description:"Turns lessons into practical builds, challenges, milestones and portfolio projects.",status:"active",courses:["*"]},
+      {id:"exam",name:"Exam Coach",provider:"ITech Academy",model:"Study Engine",role:"Study Coach",description:"Creates revision plans, quizzes and practice questions from Academy learning material.",status:"active",courses:["*"]}
+    ],
+    aiUsage:[],
     audit:[{id:"log-1",action:"SYSTEM_BOOT",actor:"system",detail:"Academy OS initialized",time:new Date().toISOString()}]
   };
 }
@@ -57,11 +67,11 @@ function loginScreen(){
   return '<div class="auth"><div class="auth-card"><div class="brand"><span class="brand-mark">I</span><span>ITech <b>Academy</b></span></div><span class="eyebrow">SECURE ACADEMY ACCESS</span><h1>Welcome, <span>builder.</span></h1><p>Choose your role and enter the Academy OS.</p><label>Email</label><input id="email" value="admin@itech.academy" autocomplete="email"><label>Role</label><select id="role"><option value="admin">Admin</option><option value="teacher">Teacher</option><option value="student">Student</option></select><button class="btn primary" onclick="login(document.getElementById(\\'email\\').value,document.getElementById(\\'role\\').value)">Sign in →</button><div class="demo"><b>Demo accounts</b><br>admin@itech.academy · teacher@itech.academy · student@itech.academy<br><br>This prototype intentionally does not collect passwords.</div></div></div>';
 }
 function dashboard(){
-  var nav=state.role==="admin"?["overview","users","courses","security","audit"]:state.role==="teacher"?["overview","courses","students","assignments"]:["overview","learning","tutor","projects"];
+  var nav=state.role==="admin"?["overview","users","courses","ai-agents","security","audit"]:state.role==="teacher"?["overview","courses","students","assignments"]:["overview","learning","ai-faculty","tutor","projects"];
   var buttons=nav.map(function(x){return '<button class="nav '+(state.view===x?"active":"")+'" onclick="panel(\\''+x+'\\')">'+label(x)+'</button>'}).join("");
   return '<header class="topbar"><a class="brand"><span class="brand-mark">I</span><span>ITech <b>Academy</b></span></a><div class="account"><span>'+esc(state.user.name)+' · '+state.role+'</span><button class="btn ghost" onclick="logout()">Sign out</button></div></header><main class="dash"><aside><div class="side-title">ACADEMY OS</div>'+buttons+'</aside><section id="content">'+view()+'</section></main>';
 }
-function label(x){return ({overview:"Overview",users:"Users & Accounts",courses:state.role==="teacher"?"My Courses":"Courses",security:"Security Center",audit:"Audit Log",students:"Students",assignments:"Assignments",learning:"My Learning",tutor:"J.A.R.K AI Tutor",projects:"Project Lab"})[x]||x}
+function label(x){return ({overview:"Overview",users:"Users & Accounts",courses:state.role==="teacher"?"My Courses":"Courses","ai-agents":"AI Agents",security:"Security Center",audit:"Audit Log",students:"Students",assignments:"Assignments",learning:"My Learning","ai-faculty":"AI Faculty",tutor:"J.A.R.K AI Tutor",projects:"Project Lab"})[x]||x}
 function panel(type){state.view=type;render()}
 function course(id){return state.data.courses.find(function(c){return c.id===id})}
 function lessons(c){return c.modules.reduce(function(a,m){return a.concat(m.lessons)},[])}
@@ -69,6 +79,51 @@ function courseCount(c){return state.data.enrollments.filter(function(e){return 
 function teacherCourses(){return state.data.courses.filter(function(c){return c.teacherId===state.user.id})}
 function myEnrollments(){return state.data.enrollments.filter(function(e){return e.studentId===state.user.id})}
 function publishedLessons(){return teacherCourses().reduce(function(n,c){return n+lessons(c).length},0)}
+
+function activeAgents(){return state.data.aiAgents.filter(function(a){return a.status==="active"})}
+function agent(id){return state.data.aiAgents.find(function(a){return a.id===id})}
+function agentAllowed(a,cid){return a.status==="active"&&(a.courses.indexOf("*")>=0||a.courses.indexOf(cid)>=0)}
+function recommendAgent(q,cid){
+  var s=q.toLowerCase();
+  var id=s.match(/\b(debug|bug|javascript|python|code|program|api|database|sql|flutter|laravel|react)\b/)?"claude-code":
+    s.match(/\b(research|source|paper|explain|theory|concept|why)\b/)?"chatgpt-research":
+    s.match(/\b(image|vision|multimodal|experiment|brainstorm|innovation|ai)\b/)?"gemini-innovation":
+    s.match(/\b(cyber|security|linux|network|permission|vulnerability)\b/)?"cyber":
+    s.match(/\b(project|build|portfolio|challenge|prototype)\b/)?"lab":
+    s.match(/\b(exam|quiz|revision|test|study)\b/)?"exam":"jark";
+  var a=agent(id)||agent("jark");if(cid&&!agentAllowed(a,cid))a=agent("jark");return a;
+}
+function aiAgentsPanel(){
+  var rows=state.data.aiAgents.map(function(a){
+    var access=a.courses.indexOf("*")>=0?"All courses":a.courses.map(function(id){var c=course(id);return c?c.title:id}).join(", ");
+    return '<div class="agent-card"><div class="agent-icon">AI</div><div class="agent-main"><div class="agent-top"><span class="pill">'+esc(a.provider)+'</span><span class="agent-status '+(a.status==="active"?"live":"off")+'">'+esc(a.status)+'</span></div><h3>'+esc(a.name)+'</h3><p>'+esc(a.description)+'</p><small><b>'+esc(a.role)+'</b> · '+esc(a.model)+' · Access: '+esc(access)+'</small></div><button class="btn ghost" onclick="toggleAgent(\''+a.id+'\')">'+(a.status==="active"?"Disable":"Enable")+'</button></div>';
+  }).join("");
+  return '<div class="eyebrow">ADMIN · AI FACULTY CONTROL</div><div class="title-row"><div><h1>AI <span>Agents.</span></h1><p class="muted">Control the learning agents available to students. J.A.R.K remains the orchestration layer.</p></div><div class="ai-count">'+activeAgents().length+' active</div></div><div class="panel"><h2>Provider policy</h2><p>Provider/model credentials are server-side configuration only. This prototype stores agent metadata locally; it never stores API keys in the browser.</p></div><div class="agent-list">'+rows+'</div>';
+}
+function toggleAgent(id){
+  var a=agent(id);if(!a)return;
+  if(a.id==="jark"&&a.status==="active"){alert("J.A.R.K is the Academy orchestrator and cannot be disabled in this prototype.");return}
+  a.status=a.status==="active"?"disabled":"active";save();log("AI_AGENT_STATUS",a.name+" → "+a.status);panel("ai-agents");
+}
+function aiFacultyPanel(){
+  var enrolled=myEnrollments(),cid=enrolled.length?enrolled[0].courseId:null;
+  var cards=activeAgents().filter(function(a){return agentAllowed(a,cid)}).map(function(a){
+    return '<button class="agent-card student-agent" onclick="selectAgent(\''+a.id+'\')"><div class="agent-icon">AI</div><div class="agent-main"><div class="agent-top"><span class="pill">'+esc(a.provider)+'</span><span class="agent-status live">READY</span></div><h3>'+esc(a.name)+'</h3><p>'+esc(a.description)+'</p><small>'+esc(a.role)+'</small></div><span class="agent-arrow">→</span></button>';
+  }).join("");
+  return '<div class="eyebrow">STUDENT · AI FACULTY</div><h1>Your <span>AI Faculty.</span></h1><p class="muted">Different specialists, one Academy experience. Ask a question and J.A.R.K can route it to the appropriate faculty member.</p><div class="panel route-panel"><span class="eyebrow">SMART ROUTING</span><h2>What are you working on?</h2><input id="facultyQuestion" placeholder="e.g. Debug my JavaScript login system…"><select id="facultyCourse">'+(enrolled.length?enrolled.map(function(e){var c=course(e.courseId);return '<option value="'+esc(c.id)+'">'+esc(c.title)+'</option>'}).join(""):'<option value="">General Academy learning</option>')+'</select><button class="btn primary" onclick="routeFaculty()">Find my AI mentor →</button><div id="routeResult"></div></div><h2>Available faculty</h2><div class="agent-list">'+(cards||'<div class="panel"><p>No active AI agents are available for your enrolled courses.</p></div>')+'</div>';
+}
+function routeFaculty(){
+  var q=document.getElementById("facultyQuestion"),sel=document.getElementById("facultyCourse");if(!q||!q.value.trim())return;
+  var a=recommendAgent(q.value,sel?sel.value:null);
+  state.data.aiUsage.push({id:crypto.randomUUID(),agentId:a.id,studentId:state.user.id,action:"route",query:q.value.slice(0,240),time:new Date().toISOString()});
+  state.data.aiUsage=state.data.aiUsage.slice(-200);save();log("AI_ROUTE",a.name+" selected for student task");
+  document.getElementById("routeResult").innerHTML='<div class="route-result"><span class="agent-icon">AI</span><div><b>Recommended mentor: '+esc(a.name)+'</b><p>'+esc(a.description)+'</p><button class="btn primary" onclick="openAgentTutor(\''+a.id+'\')">Open mentor →</button></div></div>';
+}
+function selectAgent(id){openAgentTutor(id)}
+function openAgentTutor(id){
+  var a=agent(id);if(!a)return;state.view="tutor";render();
+  setTimeout(function(){var chat=document.getElementById("chat"),q=document.getElementById("q");if(chat)chat.innerHTML='<div class="bubble ai"><b>'+esc(a.name)+'</b><br>I am your '+esc(a.role)+'. I will work with your Academy context and guide you step by step. Secure provider integration is required before live model responses are enabled.</div>';if(q)q.placeholder="Ask "+a.name+"…"},0);
+}
 function overview(){
   if(state.role==="admin")return '<div class="eyebrow">ADMIN CONTROL CENTER</div><h1>Academy <span>Dashboard.</span></h1><p class="muted">Manage people, learning and platform operations.</p><div class="cards"><div><b>'+state.data.users.length+'</b><small>Accounts</small></div><div><b>'+state.data.users.filter(function(x){return x.role==="teacher"}).length+'</b><small>Teachers</small></div><div><b>'+state.data.users.filter(function(x){return x.role==="student"}).length+'</b><small>Students</small></div><div><b>'+state.data.courses.length+'</b><small>Courses</small></div></div><div class="panel"><h2>Academy health</h2><div class="health-grid"><span>Account directory <b>READY</b></span><span>Course catalog <b>READY</b></span><span>Learning progress <b>READY</b></span><span>Audit logging <b>READY</b></span><span>Real authentication <b class="warn">NOT CONNECTED</b></span><span>AI backend <b class="warn">NOT CONNECTED</b></span></div></div>';
   if(state.role==="teacher")return '<div class="eyebrow">TEACHER WORKSPACE</div><h1>Teach. <span>Build.</span> Inspire.</h1><div class="cards"><div><b>'+teacherCourses().length+'</b><small>My courses</small></div><div><b>'+state.data.enrollments.length+'</b><small>Active enrollments</small></div><div><b>'+state.data.submissions.length+'</b><small>Submissions</small></div><div><b>'+publishedLessons()+'</b><small>Lessons</small></div></div><div class="panel"><h2>Teaching workflow</h2><p>Create structured courses, add lessons and challenges, review learner progress and prepare assignments.</p><button class="btn primary" onclick="panel(\\'courses\\')">Open course manager →</button></div>';
@@ -146,14 +201,14 @@ function completeLesson(cid,lid){
   var e=state.data.enrollments.find(function(x){return x.studentId===state.user.id&&x.courseId===cid}),c=course(cid),total=Math.max(1,lessons(c).length);
   e.progress=Math.min(100,e.progress+Math.max(5,Math.round(62/total)));save();log("LESSON_COMPLETE",c.title+": "+lid);alert("Progress saved. Keep building!");startCourse(cid);
 }
-function tutorPanel(){return '<div class="eyebrow">J.A.R.K INTELLIGENT TUTOR</div><h1>Build with your <span>AI teacher.</span></h1><div class="panel chat"><div id="chat"><div class="bubble ai">Hello, builder. I can explain a concept, guide a project, review your approach or help you debug. The secure model endpoint will be connected here.</div></div><div class="composer"><input id="q" placeholder="Ask your tutor…" onkeydown="if(event.key===\\'Enter\\')askTutor()"><button class="btn primary" onclick="askTutor()">Ask →</button></div></div>'}
+function tutorPanel(){var selected=state.data.aiAgents.find(function(a){return a.id==="jark"})||state.data.aiAgents[0];return '<div class="eyebrow">AI FACULTY · '+esc(selected.role.toUpperCase())+'</div><h1>Build with your <span>'+esc(selected.name)+'.</span></h1><div class="panel chat"><div id="chat"><div class="bubble ai">Hello, builder. I can explain a concept, guide a project, review your approach or help you debug. The secure model endpoint will be connected here.</div></div><div class="composer"><input id="q" placeholder="Ask your tutor…" onkeydown="if(event.key===\\'Enter\\')askTutor()"><button class="btn primary" onclick="askTutor()">Ask →</button></div></div>'}
 function askTutor(){var q=document.getElementById("q");if(!q||!q.value.trim())return;var text=q.value.trim();document.getElementById("chat").innerHTML+='<div class="bubble user">'+esc(text)+'</div><div class="bubble ai">Tutor mode is ready in the UI. In production, J.A.R.K will receive your course, lesson and progress context through a protected server endpoint and return a guided teaching response.</div>';q.value="";log("TUTOR_QUERY",text.slice(0,120))}
 function projectsPanel(){
   var mine=state.data.submissions.filter(function(x){return x.studentId===state.user.id});
   var rows=mine.length?mine.map(function(x){return '<div class="row"><div><b>'+esc(x.title)+'</b><small>'+esc(x.status)+'</small></div></div>'}).join(""):"<p>No projects submitted yet. Complete a project lesson to start your portfolio.</p>";
   return '<div class="eyebrow">PROJECT LAB</div><h1>Build <span>something.</span></h1><div class="panel"><p>Project submissions become part of your learning portfolio.</p>'+rows+'</div>';
 }
-function securityPanel(){return '<div class="eyebrow">SECURITY CENTER</div><h1>Platform <span>Security.</span></h1><div class="security-grid"><div class="security-item ok"><b>✓</b><div><h3>Role-aware UI</h3><p>Admin, teacher and student interfaces are separated in this prototype.</p></div></div><div class="security-item ok"><b>✓</b><div><h3>Audit events</h3><p>Important demo actions are recorded locally for inspection.</p></div></div><div class="security-item warn"><b>!</b><div><h3>Real authentication</h3><p>Not connected. Production accounts require server-side identity, password hashing or OAuth, secure sessions and authorization checks.</p></div></div><div class="security-item warn"><b>!</b><div><h3>Database/API</h3><p>Not connected. Do not use localStorage as the source of truth for real users or permissions.</p></div></div><div class="security-item warn"><b>!</b><div><h3>AI endpoint</h3><p>Not connected. API keys must never be shipped to the browser.</p></div></div></div>'}
+function securityPanel(){return '<div class="eyebrow">SECURITY CENTER</div><h1>Platform <span>Security.</span></h1><div class="security-grid"><div class="security-item ok"><b>✓</b><div><h3>Role-aware UI</h3><p>Admin, teacher and student interfaces are separated in this prototype.</p></div></div><div class="security-item ok"><b>✓</b><div><h3>Audit events</h3><p>Important demo actions are recorded locally for inspection.</p></div></div><div class="security-item warn"><b>!</b><div><h3>Real authentication</h3><p>Not connected. Production accounts require server-side identity, password hashing or OAuth, secure sessions and authorization checks.</p></div></div><div class="security-item warn"><b>!</b><div><h3>Database/API</h3><p>Not connected. Do not use localStorage as the source of truth for real users or permissions.</p></div></div><div class="security-item warn"><b>!</b><div><h3>AI provider gateway</h3><p>Not connected. AI agent metadata is available in the prototype, but live provider calls must go through a protected server gateway with secret storage, rate limits, access checks and usage logging.</p></div></div><div class="security-item ok"><b>✓</b><div><h3>AI Faculty policy</h3><p>Agents are role-aware in the UI, can be assigned to courses, and route events are recorded for future server-side audit controls.</p></div></div></div>'}
 function auditPanel(){
   var rows=state.data.audit.map(function(x){return '<tr><td>'+new Date(x.time).toLocaleString()+'</td><td>'+esc(x.actor)+'</td><td>'+esc(x.action)+'</td><td>'+esc(x.detail)+'</td></tr>'}).join("");
   return '<div class="eyebrow">ADMIN</div><h1>Audit <span>Log.</span></h1><div class="panel table-wrap"><table><tr><th>Time</th><th>Actor</th><th>Action</th><th>Detail</th></tr>'+rows+'</table></div>';
