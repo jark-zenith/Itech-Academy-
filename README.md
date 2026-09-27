@@ -161,3 +161,41 @@ ITech Academy is not meant to be another place where people only watch tutorials
 The goal is simple:
 
 > Learn the technology. Understand the system. Build something real.
+
+## AI Faculty
+
+ITech Academy now includes a multi-agent learning design so students can access specialist teaching support without leaving the Academy.
+
+### Faculty
+
+- **J.A.R.K** — Lead AI Tutor and orchestrator
+- **Claude Code Mentor** — programming, architecture, debugging and code review
+- **ChatGPT Research Mentor** — concepts, research and structured problem solving
+- **Gemini Innovation Mentor** — multimodal work, AI experiments and innovation
+- **Cyber Mentor** — defensive cybersecurity, Linux and networking
+- **Project Lab Coach** — practical builds and portfolio projects
+- **Exam Coach** — quizzes, revision and study planning
+
+The student portal provides an **AI Faculty** view with simple task routing. The admin portal provides an **AI Agents** control center for agent status and course access metadata.
+
+### Production AI architecture
+
+Student → J.A.R.K Orchestrator → AI Faculty Agent → Secure Provider Gateway → Model
+
+External providers are model infrastructure, while ITech Academy owns the learner experience, curriculum context, permissions, progress and audit layer.
+
+The current UI is a safe prototype: it does **not** make live provider calls and does not store API keys. Production implementation requires server-side provider credentials, authenticated sessions, authorization checks, rate limiting, usage controls, prompt/context boundaries, safety filtering and audit logging.
+
+### Phase 5 — AI Faculty
+
+- [x] Multi-agent registry foundation
+- [x] Student AI Faculty interface
+- [x] Admin AI Agents control center
+- [x] Course-aware agent access metadata
+- [x] Prototype task routing
+- [ ] Secure provider gateway
+- [ ] Real J.A.R.K orchestration
+- [ ] Provider adapters for OpenAI, Anthropic and Google
+- [ ] AI usage metering and limits
+- [ ] Context/RAG retrieval from Academy lessons
+- [ ] AI safety and moderation layer
