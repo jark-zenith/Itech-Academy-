@@ -130,3 +130,46 @@ create table if not exists audit_logs (
 -- 3. Enforce role authorization server-side/RLS; never trust browser role values.
 -- 4. Keep model/API keys on the server, never in client JavaScript.
 -- 5. Add RLS policies before exposing these tables to a browser client.
+
+-- AI Faculty / multi-agent learning layer
+create table if not exists ai_agents (
+  id uuid primary key,
+  name text not null,
+  provider text not null,
+  model text not null,
+  role text not null,
+  description text,
+  status text not null default 'active' check (status in ('active','disabled')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create table if not exists ai_agent_course_access (
+  agent_id uuid not null references ai_agents(id) on delete cascade,
+  course_id uuid not null references courses(id) on delete cascade,
+  enabled boolean not null default true,
+  primary key (agent_id, course_id)
+);
+create table if not exists ai_routing_rules (
+  id uuid primary key,
+  name text not null,
+  trigger_keywords text[] not null default '{}',
+  agent_id uuid not null references ai_agents(id) on delete cascade,
+  priority integer not null default 100,
+  enabled boolean not null default true,
+  created_at timestamptz not null default now()
+);
+create table if not exists ai_usage_logs (
+  id uuid primary key,
+  student_id uuid references profiles(id) on delete set null,
+  agent_id uuid references ai_agents(id) on delete set null,
+  course_id uuid references courses(id) on delete set null,
+  action text not null,
+  input_tokens integer,
+  output_tokens integer,
+  latency_ms integer,
+  status text not null default 'success' check (status in ('success','blocked','error')),
+  metadata jsonb,
+  created_at timestamptz not null default now()
+);
+-- AI Faculty production security: provider credentials/API keys are server-side secrets only;
+-- students invoke only active agents assigned to enrolled courses; apply RLS before browser access.
