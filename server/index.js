@@ -194,12 +194,18 @@ app.get("/api/enrollments/me", requireRoles("student"), async (req, res, next) =
 
 app.get("/api/teacher/students", requireRoles("teacher", "admin"), async (req, res, next) => {
   try {
-    const { data, error } = await adminClient
+    let query = adminClient
       .from("enrollments")
       .select("student_id,status,enrolled_at,courses!inner(id,title,teacher_id),profiles!inner(id,full_name,email,status)")
-      .eq(req.profile.role === "teacher" ? "courses.teacher_id" : "courses.teacher_id", req.profile.id);
+      .order("enrolled_at", { ascending: false });
 
+    if (req.profile.role === "teacher") {
+      query = query.eq("courses.teacher_id", req.profile.id);
+    }
+
+    const { data, error } = await query;
     if (error) throw error;
+
     res.json({ enrollments: data || [] });
   } catch (error) {
     next(error);
