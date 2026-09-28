@@ -77,6 +77,12 @@ function learningRoutes({ db, requireRoles }) {
         .eq("id", req.params.id).maybeSingle();
       if (error) throw error;
       if (!data) return res.status(404).json({ error: "Quiz not found." });
+      if (req.profile.role === "student") {
+        data.quiz_questions = (data.quiz_questions || []).map(q => ({
+          ...q,
+          quiz_options: (q.quiz_options || []).map(({ is_correct, ...option }) => option)
+        }));
+      }
       res.json({ quiz: data });
     } catch (error) { next(error); }
   });
