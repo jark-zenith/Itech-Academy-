@@ -129,12 +129,27 @@ No passwords are stored by the prototype.
 - [x] Database schema foundation
 
 ### Phase 2 — Production backend
-- [ ] Real authentication
-- [ ] Database connection
-- [ ] Server-side RBAC
-- [ ] RLS/access policies
-- [ ] Real course persistence
-- [ ] Teacher/student account lifecycle
+- [x] Backend/API foundation
+- [x] Supabase server client and environment contract
+- [x] Bearer-session verification middleware
+- [x] Server-side role authorization middleware
+- [x] Production course/enrollment API foundation
+- [x] PostgreSQL/Supabase RLS policy foundation
+- [ ] Connect a real Supabase project
+- [ ] Configure Supabase Auth providers
+- [ ] Migrate demo accounts to real Auth users
+- [ ] Replace dashboard localStorage with API persistence
+- [ ] Complete teacher/student account lifecycle
+- [ ] Production API integration testing
+- [ ] Production deployment and secret configuration
+
+### Phase 2 implementation files
+- `server/index.js` — protected API boundary, authentication and RBAC middleware
+- `.env.example` — required production configuration
+- `database/schema.sql` — PostgreSQL/Supabase data model
+- `database/rls.sql` — Row-Level Security policies
+
+The backend is intentionally not marked as fully live until a real Supabase project is connected. Never put `SUPABASE_SERVICE_ROLE_KEY` in browser code or commit a real `.env` file.
 
 ### Phase 3 — Learning engine
 - [ ] Rich lesson editor
