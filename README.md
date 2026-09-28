@@ -152,13 +152,17 @@ No passwords are stored by the prototype.
 The backend is intentionally not marked as fully live until a real Supabase project is connected. Never put `SUPABASE_SERVICE_ROLE_KEY` in browser code or commit a real `.env` file.
 
 ### Phase 3 — Learning engine
-- [ ] Rich lesson editor
-- [ ] Video/resources
-- [ ] Quizzes
-- [ ] Coding labs
-- [ ] Assignment grading
-- [ ] Certificates and verification
-- [ ] Student portfolio
+- [x] Learning-engine database schema
+- [x] Lesson/resource API foundation
+- [x] Video/resource metadata
+- [x] Quiz delivery
+- [x] Server-side quiz scoring
+- [x] Coding-lab data model
+- [x] Assignment grading API
+- [x] Certificate issuance and public verification API
+- [x] Student portfolio persistence
+- [ ] Rich lesson/coding editor UI integration
+- [ ] Object storage for uploaded media/files
 
 ### Phase 4 — J.A.R.K Tutor
 - [ ] Secure model endpoint
@@ -208,9 +212,32 @@ The current UI is a safe prototype: it does **not** make live provider calls and
 - [x] Admin AI Agents control center
 - [x] Course-aware agent access metadata
 - [x] Prototype task routing
-- [ ] Secure provider gateway
-- [ ] Real J.A.R.K orchestration
-- [ ] Provider adapters for OpenAI, Anthropic and Google
-- [ ] AI usage metering and limits
-- [ ] Context/RAG retrieval from Academy lessons
-- [ ] AI safety and moderation layer
+- [x] Server-only provider gateway
+- [x] Provider adapters for OpenAI, Anthropic and Gemini
+- [x] Real server-side J.A.R.K routing contract
+- [x] Course/lesson context retrieval
+- [x] AI usage logging
+- [x] Provider configuration checks
+- [ ] Streaming responses
+- [ ] Embeddings/vector RAG
+- [ ] Production moderation/classification policy
+- [ ] Per-role/per-course usage budgets
+
+
+### Phase 6 — Production operations & scale
+
+- [x] API rate limiting
+- [x] Health and readiness endpoints
+- [x] Request IDs for tracing
+- [x] Secure HTTP headers
+- [x] Graceful shutdown
+- [x] Docker production image
+- [x] Admin operational metrics API
+- [x] Incident/usage database foundation
+- [x] Production database indexes
+- [ ] Centralized error monitoring
+- [ ] Automated database backups/restore testing
+- [ ] CI/CD deployment pipeline
+- [ ] Domain, TLS and production environment configuration
+- [ ] Load testing and performance budgets
+- [ ] Disaster-recovery runbook
