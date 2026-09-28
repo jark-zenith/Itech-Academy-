@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.ITechAcademy" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">#050B14</item>
+        <item name="android:navigationBarColor">#050B14</item>
+        <item name="android:windowBackground">#050B14</item>
+    </style>
+</resources>

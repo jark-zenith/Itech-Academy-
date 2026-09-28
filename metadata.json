@@ -1,0 +1,6 @@
+{
+  "name": "ITech Academy",
+  "description": "Don't Just Watch Technology. Build It. Practical technology academy and learning OS.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
