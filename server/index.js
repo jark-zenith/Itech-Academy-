@@ -8,6 +8,7 @@ const { learningRoutes } = require("./routes/learning");
 const { aiRoutes } = require("./routes/ai");
 const { chatRoutes } = require("./routes/chat");
 const { opsRoutes } = require("./routes/ops");
+const { phase3Routes } = require("./routes/phase3");
 
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
@@ -88,6 +89,7 @@ app.get("/api/ready", async (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/learning", learningRoutes({ db, requireRoles }));
+app.use("/api/learning", phase3Routes({ db, requireRoles }));
 app.use("/api/ai", aiRoutes({ db, requireRoles }));
 app.use("/api/ai", chatRoutes({ db, requireRoles }));
 app.use("/api/ops", opsRoutes({ db, requireRoles }));
